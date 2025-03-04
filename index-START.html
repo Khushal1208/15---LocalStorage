@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Task List</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="icon" href="https://fav.farm/✅">
+  <style>
+    /* CSS styles (moved from the original HTML) */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* Use min-height for full viewport coverage */
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 90%; /* Make it responsive */
+      max-width: 500px; /* Limit the maximum width */
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .add-items {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .add-btn {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+      font-size: 16px;
+    }
+
+    .add-btn:hover {
+      background-color: #0b7dda;
+    }
+
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .task-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 16px;
+      transition: background-color 0.2s ease;
+    }
+
+    .task-list li:last-child {
+      border-bottom: none;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 10px;
+    }
+
+    input[type="checkbox"]:checked + label {
+      text-decoration: line-through;
+      color: #aaa;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #f44336;
+      font-size: 18px;
+      transition: color 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      color: #d32f2f;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .check-all,
+    .clear-all {
+      padding: 8px 16px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .check-all {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .check-all:hover {
+      background-color: #43A047;
+    }
+
+    .clear-all {
+      background: #f44336;
+      color: white;
+    }
+
+    .clear-all:hover {
+      background-color: #d32f2f;
+    }
+
+    /* Add a subtle background color on hover */
+    .task-list li:hover {
+      background-color: #f9f9f9;
+    }
+
+    /* Make the layout responsive */
+    @media (max-width: 400px) {
+      .container {
+        width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📌 My Task List</h2>
+    <form class="add-items" aria-label="Add new task">
+      <input type="text" id="item" name="item" placeholder="Enter a task..." required aria-required="true">
+      <button type="submit" class="add-btn">+ Add Task</button>
+    </form>
+    <ul class="task-list" aria-label="Task list"></ul>
+    <div class="controls">
+      <button class="check-all">✔ Check All</button>
+      <button class="clear-all">🗑 Clear All</button>
+    </div>
+  </div>
+
+  <script>
+    // Selectors
+    const addItems = document.querySelector('.add-items');
+    const itemsList = document.querySelector('.task-list');
+    const checkAllBtn = document.querySelector('.check-all');
+    const clearAllBtn = document.querySelector('.clear-all');
+
+    // Load tasks from localStorage or initialize an empty array
+    let items = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    // Function to add a new item
+    function addItem(e) {
+      e.preventDefault(); // Prevent form submission
+
+      const input = this.querySelector('[name=item]');
+      const text = input.value.trim(); // Get the input value and remove extra spaces
+
+      if (!text) {
+        alert("Please enter a task!"); // Basic validation
+        return;
+      }
+
+      const item = {
+        text,
+        done: false
+      }; // Create a new item object
+      items.push(item); // Add the item to the array
+      updateList(); // Update the displayed list
+      this.reset(); // Clear the form
+    }
+
+    // Function to update the task list in the UI
+    function updateList() {
+      itemsList.innerHTML = items.map((item, i) => `
+        <li class="task ${item.done ? 'completed' : ''}">
+          <input type="checkbox" data-index="${i}" id="item${i}" ${item.done ? 'checked' : ''} aria-label="Mark as complete">
+          <label for="item${i}">${item.text}</label>
+          <button class="delete-btn" data-index="${i}" aria-label="Delete task"><i class="fa fa-trash"></i></button>
+        </li>
+      `).join('');
+
+      localStorage.setItem('tasks', JSON.stringify(items)); // Update localStorage
+    }
+
+    // Function to toggle the 'done' status of a task
+    function toggleDone(e) {
+      if (!e.target.matches('input[type="checkbox"]')) return; // Exit if not a checkbox
+
+      const index = parseInt(e.target.dataset.index); // Get the index from the data attribute
+
+      if (isNaN(index) || index < 0 || index >= items.length) {
+        console.error('Invalid index:', index);
+        return;
+      }
+
+      items[index].done = !items[index].done; // Toggle the 'done' status
+      updateList(); // Update the displayed list
+    }
+
+    // Function to delete a task
+    function deleteItem(e) {
+      if (!e.target.closest('.delete-btn')) return; // Exit if not a delete button
+
+      const index = parseInt(e.target.closest('.delete-btn').dataset.index); // Get the index from the data attribute
+
+      if (isNaN(index) || index < 0 || index >= items.length) {
+        console.error('Invalid index:', index);
+        return;
+      }
+
+      items.splice(index, 1); // Remove the item from the array
+      updateList(); // Update the displayed list
+    }
+
+    // Function to check all tasks
+    function checkAll() {
+      items.forEach(item => item.done = true); // Mark all items as 'done'
+      updateList(); // Update the displayed list
+    }
+
+    // Function to clear all tasks
+    function clearAll() {
+      items = []; // Clear the items array
+      updateList(); // Update the displayed list
+    }
+
+    // Event listeners
+    addItems.addEventListener('submit', addItem); // Add item form submit
+    itemsList.addEventListener('click', toggleDone); // Toggle done status
+    itemsList.addEventListener('click', deleteItem); // Delete item
+    checkAllBtn.addEventListener('click', checkAll); // Check all items
+    clearAllBtn.addEventListener('click', clearAll); // Clear all items
+
+    // Initial population of the list
+    updateList();
+  </script>
+</body>
+</html>
